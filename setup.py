@@ -4,11 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="itunes-app-scraper-dmi",
+    name="async-itunes-app-scraper-dmi",
     version="0.9.4",
-    author="Digital Methods Initiative",
-    author_email="stijn.peeters@uva.nl",
-    description="A lightweight iTunes App Store scraper",
+    author="liorchen",
+    author_email="liorchen2@gmail.com",
+    description="A lightweight async iTunes App Store scraper based on https://github.com/digitalmethodsinitiative/itunes-app-scraper",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/digitalmethodsinitiative/itunes-app-scraper",
@@ -17,6 +17,9 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+    ],
+    install_requires=[
+        'aiohttp>=3.5.2,<4.0'
     ],
     python_requires='>=3.6',
 )

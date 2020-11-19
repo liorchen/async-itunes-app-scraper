@@ -12,15 +12,21 @@ nodeJS-based scraper that does similar things. But this scraper uses Python.
 The following scrapes app details about all apps similar to the first result 
 for the 'fortnite' search query:
 
-```
+```python
 from itunes_app_scraper.scraper import AppStoreScraper
+import asyncio
+import pprint
 
-scraper = AppStoreScraper()
-results = scraper.get_app_ids_for_query("fortnite")
-similar = scraper.get_similar_app_ids_for_app(results[0])
+async def main():
+    scraper = AppStoreScraper()
+    results = await scraper.get_app_ids_for_query("fortnite")
+    # similar = await scraper.get_similar_app_ids_for_app(results[0])
+    
+    async for app in scraper.get_multiple_app_details(results):
+        pprint.pprint(app)
 
-app_details = scraper.get_multiple_app_details(similar)
-print(list(app_details))
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
 ```
 
 Documentation is not available separately yet, but the code is relatively

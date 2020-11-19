@@ -1,12 +1,17 @@
 """
 iTunes App Store Scraper
 """
+import asyncio
+import random
+
 import requests
 import json
 import time
 import re
 
 from urllib.parse import quote_plus
+
+from itunes_app_scraper.http import get, get_text
 from itunes_app_scraper.util import AppStoreException, AppStoreCollections, AppStoreCategories, AppStoreMarkets
 
 
@@ -20,7 +25,7 @@ class AppStoreScraper:
 	can be found at https://github.com/facundoolano/app-store-scraper.
 	"""
 
-	def get_app_ids_for_query(self, term, num=50, page=1, country="nl", lang="nl"):
+	async def get_app_ids_for_query(self, term, num=50, page=1, country="us", lang="us"):
 		"""
 		Retrieve suggested app IDs for search query
 
@@ -45,13 +50,13 @@ class AppStoreScraper:
 		}
 
 		try:
-			result = requests.get(url, headers=headers).json()
+			result = await get(url, headers=headers)
 		except json.JSONDecodeError:
 			raise AppStoreException("Could not parse app store response")
 
 		return [app["id"] for app in result["bubbles"][0]["results"][:amount]]
 
-	def get_app_ids_for_collection(self, collection="", category="", num=50, country="nl", lang=""):
+	async def get_app_ids_for_collection(self, collection="", category="", num=50, country="us", lang=""):
 		"""
 		Retrieve app IDs in given App Store collection
 
@@ -76,13 +81,13 @@ class AppStoreScraper:
 		url = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/%s/%s/limit=%s/json?s=%s" % params
 
 		try:
-			result = requests.get(url).json()
+			result = await get(url)
 		except json.JSONDecodeError:
 			raise AppStoreException("Could not parse app store response")
 
 		return [entry["id"]["attributes"]["im:id"] for entry in result["feed"]["entry"]]
 
-	def get_app_ids_for_developer(self, developer_id, country="nl", lang=""):
+	async def get_app_ids_for_developer(self, developer_id, country="us", lang=""):
 		"""
 		Retrieve App IDs linked to given developer
 
@@ -96,7 +101,7 @@ class AppStoreScraper:
 		url = "https://itunes.apple.com/lookup?id=%s&country=%s&entity=software" % (developer_id, country)
 
 		try:
-			result = requests.get(url).json()
+			result = await get(url)
 		except json.JSONDecodeError:
 			raise AppStoreException("Could not parse app store response")
 
@@ -106,7 +111,7 @@ class AppStoreScraper:
 			# probably an invalid developer ID
 			return []
 
-	def get_similar_app_ids_for_app(self, app_id, country="nl", lang="nl"):
+	async def get_similar_app_ids_for_app(self, app_id, country="us", lang="us"):
 		"""
 		Retrieve list of App IDs of apps similar to given app
 
@@ -128,8 +133,7 @@ class AppStoreScraper:
 			"X-Apple-Store-Front": "%s,32" % country,
 			"Accept-Language": lang
 		}
-
-		result = requests.get(url, headers=headers).text
+		result = await get_text(url, headers=headers)
 		if "customersAlsoBoughtApps" not in result:
 			return []
 
@@ -144,7 +148,7 @@ class AppStoreScraper:
 
 		return ids
 
-	def get_app_details(self, app_id, country="nl", lang="", flatten=True):
+	async def get_app_details(self, app_id, country="us", lang="", flatten=True):
 		"""
 		Get app details for given app ID
 
@@ -171,7 +175,8 @@ class AppStoreScraper:
 		url = "https://itunes.apple.com/lookup?%s=%s&country=%s&entity=software" % (id_field, app_id, country)
 
 		try:
-			result = requests.get(url).json()
+			result = await get_text(url)
+			result = json.loads(result)
 		except json.JSONDecodeError:
 			raise AppStoreException("Could not parse app store response")
 
@@ -190,20 +195,21 @@ class AppStoreScraper:
 
 		return app
 
-	def get_multiple_app_details(self, app_ids, country="nl", lang=""):
+	async def get_multiple_app_details(self, app_ids, country="us", lang=""):
 		"""
 		Get app details for a list of app IDs
 
 		:param list app_id:  App IDs to retrieve details for
 		:param str country:  Two-letter country code for the store to search in.
-		                     Defaults to 'nl'.
+		                     Defaults to 'us'.
 		:param str lang: Dummy argument for compatibility. Unused.
 
 		:return generator:  A list (via a generator) of app details
 		"""
 		for app_id in app_ids:
-			time.sleep(1)
-			yield self.get_app_details(app_id, country=country, lang=lang)
+			await asyncio.sleep(random.uniform(0.2, 1))
+			d = await self.get_app_details(app_id, country=country, lang=lang)
+			yield d
 
 	def get_store_id_for_country(self, country):
 		"""
