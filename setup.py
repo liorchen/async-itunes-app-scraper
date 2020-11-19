@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="async-itunes-app-scraper-dmi",
-    version="0.9.4",
+    version="0.9.5",
     author="liorchen",
     author_email="liorchen2@gmail.com",
     description="A lightweight async iTunes App Store scraper based on https://github.com/digitalmethodsinitiative/itunes-app-scraper",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/digitalmethodsinitiative/itunes-app-scraper",
+    url="https://github.com/liorchen/async-itunes-app-scraper",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
